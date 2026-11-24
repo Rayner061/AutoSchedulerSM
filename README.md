@@ -1,4 +1,4 @@
-# Autopost: free scheduled posting to Facebook, Instagram and TikTok
+# Autopost: free scheduled posting to Facebook, Instagram, TikTok and YouTube
 
 You write your posts in a **Google Sheet**. Every 15 minutes, **GitHub Actions** (free) checks the
 sheet and publishes anything that's due, using the **official, free APIs** of each platform. It then
@@ -9,6 +9,7 @@ Google Sheet  ──►  GitHub Actions (every 15 min)  ──►  Facebook Page
 (+ photos/videos                                   ──►  Instagram       ✅ fully automatic
  in Google Drive)                                  ──►  TikTok          📥 sent to your inbox (1 tap to post)
                                                                          ✅ fully automatic after TikTok approves your app
+                                                   ──►  YouTube         ✅ automatic upload (public after Google's free audit)
 ```
 
 **Cost: $0.** No server, no paid services.
@@ -22,7 +23,8 @@ Google Sheet  ──►  GitHub Actions (every 15 min)  ──►  Facebook Page
 3. [Turn on the small website (GitHub Pages)](#step-3--turn-on-the-small-website-github-pages)
 4. [Facebook and Instagram](#step-4--facebook-and-instagram)
 5. [TikTok](#step-5--tiktok)
-6. [Test it](#step-6--test-it)
+6. [YouTube](#step-6--youtube)
+7. [Test it](#step-7--test-it)
 7. [Everyday use](#everyday-use)
 8. [Limits and troubleshooting](#limits-and-troubleshooting)
 9. [All settings](#all-settings)
@@ -82,7 +84,7 @@ Then delete the `.json` file from your computer, or keep it somewhere safe.
 
 ## Step 3 — Turn on the small website (GitHub Pages)
 
-Meta and TikTok require a **privacy policy** link. TikTok also needs a web page to send you back to after you log in.
+Meta, TikTok and Google require a **privacy policy** link. TikTok and YouTube also need a web page to send you back to after you log in.
 Both are included in the `docs/` folder.
 
 1. In your repo go to **Settings → Pages**.
@@ -93,6 +95,11 @@ You'll use these links:
 * Privacy policy: `https://YOUR-GITHUB-NAME.github.io/REPO-NAME/privacy.html`
 * Terms: `https://YOUR-GITHUB-NAME.github.io/REPO-NAME/terms.html`
 * TikTok callback: `https://YOUR-GITHUB-NAME.github.io/REPO-NAME/tiktok-callback.html`
+* YouTube callback: `https://YOUR-GITHUB-NAME.github.io/REPO-NAME/youtube-callback.html`
+
+> **"Upgrade or make this repository public to enable Pages"?** Your repo is private. Either make it
+> public (**Settings → General → Danger Zone → Change visibility**), or create a second, public repo
+> that holds only the files from the `docs` folder, turn on Pages there with folder **/ (root)**, and use its links instead.
 
 ---
 
@@ -181,7 +188,7 @@ TikTok works in two modes:
 1. Open your `tiktok-callback.html` page, paste your **Client key**, then click **Log in with TikTok** and approve.
 2. You land back on the page, which shows a **code**. Click **Copy code**.
 3. In GitHub: **Actions → Autopost → Run workflow**. Choose `tiktok-connect`, paste the code into
-   **tiktok_code**, then click **Run workflow**. Do this within a few minutes, because the code expires.
+   **login_code**, then click **Run workflow**. Do this within a few minutes, because the code expires.
 4. When the run is green, TikTok is connected. The robot keeps the TikTok login in a `_state` tab in your
    sheet and renews it automatically. **Don't edit that tab.**
 
@@ -195,7 +202,55 @@ If you were using Sandbox keys, replace the two TikTok secrets with the producti
 
 ---
 
-## Step 6 — Test it
+## Step 6 — YouTube
+
+You need a YouTube **channel** on the Google account you'll connect.
+
+> **Important (Google's rule):** videos uploaded by a new, unaudited Google Cloud project are
+> **locked as private**. To post publicly, fill in Google's free
+> [YouTube API Services audit form](https://support.google.com/youtube/contact/yt_api_form).
+> Describe it as "a personal tool that uploads my own videos to my own channel".
+> Approval can take a few weeks. Until then everything else works, and the sheet will
+> say `(YouTube set it to private)`.
+
+### 6a. Turn on the YouTube API
+
+Use the **same Google Cloud project** as Step 2 (<https://console.cloud.google.com/>).
+
+1. **APIs & Services → Library**: search for **YouTube Data API v3** and click **Enable**.
+2. Open **Google Auth Platform** (also called **OAuth consent screen**) and click **Get started**:
+   * App name: `Autopost`. Support email: your email.
+   * Audience: **External**. Contact email: your email. Then **Create**.
+3. **Branding**: add your `privacy.html` link as the privacy policy and your site's main link as the home page, then **Save**.
+4. **Audience**: click **Publish app** so the status becomes **In production**.
+   ⚠️ If you leave it on *Testing*, Google logs the robot out every 7 days.
+   You don't need Google's app verification, because you're the only user.
+5. **Clients → Create client**:
+   * Application type: **Web application**.
+   * **Authorized redirect URIs → Add URI**: your `youtube-callback.html` link.
+   * Click **Create**, then copy the **Client ID** and **Client secret**.
+
+### 6b. Save the GitHub settings
+
+| Where | Name | Value |
+|---|---|---|
+| Secret | `YOUTUBE_CLIENT_ID` | Client ID (ends in `.apps.googleusercontent.com`) |
+| Secret | `YOUTUBE_CLIENT_SECRET` | Client secret |
+| Variable | `YOUTUBE_REDIRECT_URI` | Your `youtube-callback.html` link, exactly as entered above |
+
+### 6c. Connect your channel
+
+1. Open your `youtube-callback.html` page, paste the **Client ID**, then click **Log in with Google**.
+2. Choose the account or channel to upload to. If Google says **"Google hasn't verified this app"**, click
+   **Advanced → Go to Autopost (unsafe)**. It's your own app. Then allow access.
+3. Copy the code shown, then go to **Actions → Autopost → Run workflow**. Choose `youtube-connect`,
+   paste the code into **login_code**, then click **Run workflow**.
+
+Vertical videos under 3 minutes automatically become **YouTube Shorts**.
+
+---
+
+## Step 7 — Test it
 
 In GitHub go to **Actions → Autopost → Run workflow** and run these one at a time:
 
@@ -207,6 +262,7 @@ In GitHub go to **Actions → Autopost → Run workflow** and run these one at a
    [OK] Facebook Page: My Page (id 1234...)
    [OK] Instagram: @mybrand (id 1784...)
    [OK] TikTok: My Name (mode: inbox)
+   [OK] YouTube: My Channel (uploads as public)
    All good!
    ```
 
@@ -225,18 +281,19 @@ Add one row per post:
 | Column | What to put | Example |
 |---|---|---|
 | **Post at** | Date and time, in the **sheet's time zone** (File → Settings) | `2026-12-05 18:30` |
-| **Platforms** | Any of `facebook`, `instagram`, `tiktok` (or `fb`, `ig`, `tt`), or `all` | `all` |
+| **Platforms** | Any of `facebook`, `instagram`, `tiktok`, `youtube` (or `fb`, `ig`, `tt`, `yt`), or `all` | `all` |
 | **Caption** | The text of the post | `New drop is live 🔥 #brand` |
 | **Media** | A **Google Drive link** to a photo or video in your shared folder, or a direct link to a file. Leave empty for a text post (Facebook only) | `https://drive.google.com/file/d/…/view` |
 | **Link** | *(optional)* A link to attach to a Facebook post | `https://mysite.com` |
-| **Caption (Facebook / Instagram / TikTok)** | *(optional)* A different caption for one platform | |
+| **Caption (Facebook / Instagram / TikTok / YouTube)** | *(optional)* A different caption for one platform. For YouTube this is the video description | |
+| **Title (YouTube)** | *(optional)* The YouTube video title. If empty, the first line of the caption is used (max 100 characters) | `How we made it` |
 
 The robot fills in the remaining columns:
 
 | Column | Meaning |
 |---|---|
 | **Status** | *(empty)* = waiting · `processing` = posting now · `posted` = done · `retrying` = will try again in 15 min · `failed …` = gave up after 3 tries · `missed …` = more than 24 h late · `error …` = something in the row needs fixing |
-| **Facebook / Instagram / TikTok result** | `✅ link to the post` · `📥 sent to TikTok inbox` · `⏳ still processing` · `➖ skipped (reason)` · `❌ error message` |
+| **Facebook / Instagram / TikTok / YouTube result** | `✅ link to the post` · `📥 sent to TikTok inbox` · `⏳ still processing` · `➖ skipped (reason)` · `❌ error message` |
 
 Tips:
 
@@ -247,11 +304,13 @@ Tips:
 
 ### What each platform accepts
 
-| | Facebook | Instagram | TikTok |
-|---|---|---|---|
-| Text only | ✅ | ➖ needs media | ➖ needs video |
-| Photo | ✅ | ✅ (PNG/HEIC converted to JPEG automatically) | ➖ skipped |
-| Video | ✅ | ✅ posted as a **Reel** | ✅ |
+| | Facebook | Instagram | TikTok | YouTube |
+|---|---|---|---|---|
+| Text only | ✅ | ➖ needs media | ➖ needs video | ➖ needs video |
+| Photo | ✅ | ✅ (PNG/HEIC converted to JPEG automatically) | ➖ skipped | ➖ skipped |
+| Video | ✅ | ✅ posted as a **Reel** | ✅ | ✅ (Short if vertical and under 3 min) |
+
+Hashtags in the caption (`#launch`) also become YouTube tags.
 
 ---
 
@@ -263,6 +322,10 @@ Tips:
   Reels can be 3 seconds to 15 minutes long. There's a daily cap on API posts per account.
 * **TikTok:** there's a daily limit on posts; if you hit it, the row retries later. Before approval,
   direct mode posts are private ("only you").
+* **YouTube:** the free daily API quota allows only a handful of uploads per day (roughly 6).
+  If you hit it, the row retries later. Uploads stay private until Google's audit (Step 6).
+* **"YouTube login failed … invalid_grant":** the Google app is still in *Testing* (Step 6a, item 4).
+  Publish it, then repeat Step 6c.
 * **"Meta error 190 … invalid or expired":** create a new `META_PAGE_TOKEN` (Step 4b). This happens
   if you change your Facebook password or remove the app's access.
 * **"TikTok login failed / reconnect TikTok":** repeat Step 5c.
@@ -285,6 +348,7 @@ Tips:
 | `META_PAGE_TOKEN` | for FB/IG | Facebook Page token |
 | `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` | for TikTok | TikTok app keys |
 | `TIKTOK_REFRESH_TOKEN` | no | Only if you got a refresh token some other way |
+| `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET` | for YouTube | Google OAuth client |
 
 **Variables** (all optional)
 
@@ -293,6 +357,10 @@ Tips:
 | `TIKTOK_REDIRECT_URI` | — | Needed for `tiktok-connect` |
 | `TIKTOK_MODE` | `inbox` | `inbox` or `direct` |
 | `TIKTOK_PRIVACY` | `SELF_ONLY` | For direct mode: `PUBLIC_TO_EVERYONE`, `MUTUAL_FOLLOW_FRIENDS`, `FOLLOWER_OF_CREATOR`, `SELF_ONLY` |
+| `YOUTUBE_REDIRECT_URI` | — | Needed for `youtube-connect` |
+| `YOUTUBE_PRIVACY` | `public` | `public`, `unlisted` or `private` |
+| `YOUTUBE_CATEGORY_ID` | `22` | YouTube category (22 = People & Blogs, 24 = Entertainment, 26 = Howto & Style) |
+| `YOUTUBE_MADE_FOR_KIDS` | `false` | Set `true` if your videos are made for children |
 | `TIMEZONE` | the sheet's time zone | e.g. `America/New_York` |
 | `SHEET_TAB` | `Posts` | Name of the tab with your posts |
 | `MAX_ATTEMPTS` | `3` | Tries before giving up |
@@ -306,5 +374,5 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-Code: `autopost/runner.py` (scheduling logic), `meta.py` (Facebook + Instagram), `tiktok.py`,
+Code: `autopost/runner.py` (scheduling logic), `meta.py` (Facebook + Instagram), `tiktok.py`, `youtube.py`,
 `sheet.py` (Google Sheets), `media.py` (Drive downloads, JPEG conversion), `cli.py` (commands).

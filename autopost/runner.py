@@ -20,6 +20,7 @@ PLATFORM_ALIASES = {
     "fb": "facebook", "facebook": "facebook", "meta": "facebook",
     "ig": "instagram", "insta": "instagram", "instagram": "instagram",
     "tt": "tiktok", "tiktok": "tiktok", "tik_tok": "tiktok",
+    "yt": "youtube", "youtube": "youtube", "shorts": "youtube",
 }
 
 Publisher = Callable[[Post], Result]
@@ -28,7 +29,7 @@ Publisher = Callable[[Post], Result]
 def parse_platforms(text: str) -> list[str]:
     tokens = [t for t in re.split(r"[,;/|+&\s]+", text.strip().lower().replace("tik tok", "tiktok")) if t]
     if not tokens:
-        raise ValueError("Platforms is empty. Use: facebook, instagram, tiktok (or 'all').")
+        raise ValueError("Platforms is empty. Use: facebook, instagram, tiktok, youtube (or 'all').")
     if any(t in {"all", "everything", "every"} for t in tokens):
         return list(PLATFORMS)
     found: list[str] = []
@@ -37,7 +38,7 @@ def parse_platforms(text: str) -> list[str]:
             continue
         name = PLATFORM_ALIASES.get(token)
         if not name:
-            raise ValueError(f"Unknown platform '{token}'. Use facebook, instagram, tiktok or all.")
+            raise ValueError(f"Unknown platform '{token}'. Use facebook, instagram, tiktok, youtube or all.")
         if name not in found:
             found.append(name)
     return found
@@ -148,6 +149,7 @@ class Runner:
             row_number=row.number,
             caption=row.text("caption"),
             link=row.text("link"),
+            title=row.text("title_youtube"),
             media_ref=row.text("media"),
             captions={p: row.text(f"caption_{p}") for p in PLATFORMS if row.text(f"caption_{p}")},
         )

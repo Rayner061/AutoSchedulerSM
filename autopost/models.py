@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-PLATFORMS = ("facebook", "instagram", "tiktok")
+PLATFORMS = ("facebook", "instagram", "tiktok", "youtube")
 
 # The first character of a result cell tells the runner whether that platform is finished.
 SUCCESS = "✅"
@@ -42,6 +42,7 @@ class Post:
     row_number: int
     caption: str
     link: str = ""
+    title: str = ""  # YouTube title
     media_ref: str = ""
     captions: dict = field(default_factory=dict)  # per-platform overrides
     media: Optional[Media] = None  # filled in after download

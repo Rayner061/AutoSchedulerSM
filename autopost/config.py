@@ -56,6 +56,13 @@ class Config:
     tiktok_mode: str  # "inbox" or "direct"
     tiktok_privacy: str
 
+    youtube_client_id: str
+    youtube_client_secret: str
+    youtube_redirect_uri: str
+    youtube_privacy: str  # public, unlisted or private
+    youtube_category_id: str
+    youtube_made_for_kids: bool
+
     max_attempts: int
     max_late_hours: int
     dry_run: bool
@@ -67,6 +74,10 @@ class Config:
     @property
     def tiktok_app_configured(self) -> bool:
         return bool(self.tiktok_client_key and self.tiktok_client_secret)
+
+    @property
+    def youtube_app_configured(self) -> bool:
+        return bool(self.youtube_client_id and self.youtube_client_secret)
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -97,6 +108,10 @@ class Config:
         if privacy not in allowed_privacy:
             raise ConfigError(f"TIKTOK_PRIVACY must be one of {sorted(allowed_privacy)}.")
 
+        yt_privacy = _env("YOUTUBE_PRIVACY", "public").lower()
+        if yt_privacy not in {"public", "unlisted", "private"}:
+            raise ConfigError("YOUTUBE_PRIVACY must be public, unlisted or private.")
+
         version = _env("GRAPH_API_VERSION", "v23.0")
         if not version.startswith("v"):
             version = "v" + version
@@ -114,6 +129,12 @@ class Config:
             tiktok_redirect_uri=_env("TIKTOK_REDIRECT_URI"),
             tiktok_mode=mode,
             tiktok_privacy=privacy,
+            youtube_client_id=_env("YOUTUBE_CLIENT_ID"),
+            youtube_client_secret=_env("YOUTUBE_CLIENT_SECRET"),
+            youtube_redirect_uri=_env("YOUTUBE_REDIRECT_URI"),
+            youtube_privacy=yt_privacy,
+            youtube_category_id=_env("YOUTUBE_CATEGORY_ID", "22"),
+            youtube_made_for_kids=_bool("YOUTUBE_MADE_FOR_KIDS"),
             max_attempts=max(1, _int("MAX_ATTEMPTS", 3)),
             max_late_hours=max(1, _int("MAX_LATE_HOURS", 24)),
             dry_run=_bool("DRY_RUN"),

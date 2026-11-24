@@ -47,7 +47,7 @@ def boom(msg):
 def test_parse_platforms_aliases_and_all():
     assert parse_platforms("FB, ig") == ["facebook", "instagram"]
     assert parse_platforms("Tik Tok and Instagram") == ["tiktok", "instagram"]
-    assert parse_platforms("all") == ["facebook", "instagram", "tiktok"]
+    assert parse_platforms("all") == ["facebook", "instagram", "tiktok", "youtube"]
     with pytest.raises(ValueError):
         parse_platforms("myspace")
     with pytest.raises(ValueError):
@@ -83,13 +83,13 @@ def test_drive_ids():
 def test_due_row_posts_everywhere():
     q, r = make_runner(
         [{"post_at": "2026-12-01 14:50", "platforms": "all", "caption": "hi", "media": "x", "status": ""}],
-        {"facebook": ok("fb"), "instagram": ok("ig"), "tiktok": ok("tt")},
+        {"facebook": ok("fb"), "instagram": ok("ig"), "tiktok": ok("tt"), "youtube": ok("yt")},
     )
     s = r.run()
     row = q._rows[0].values
     assert s.posted == 1
     assert row["status"] == "posted"
-    assert row["facebook_result"] == "✅ fb" and row["tiktok_result"] == "✅ tt"
+    assert row["facebook_result"] == "✅ fb" and row["tiktok_result"] == "✅ tt" and row["youtube_result"] == "✅ yt"
     assert q.writes[0][1]["status"] == "processing"  # marked before publishing
 
 

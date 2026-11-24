@@ -35,7 +35,7 @@ def test_queue_adds_missing_output_columns_and_writes_cells():
     ])
     q = SheetQueue(ws)
     q.load()
-    assert ws.updates[0][0] == "E1:J1"  # 6 output columns appended after column D
+    assert ws.updates[0][0] == "E1:K1"  # 7 output columns appended after column D
     assert q.columns["status"] == 5 and q.columns["tiktok_result"] == 8
     rows = list(q.rows())
     assert rows[0].raw("post_at") == 46357.625 and rows[1].is_blank()

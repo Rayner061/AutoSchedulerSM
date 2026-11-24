@@ -26,6 +26,8 @@ INPUT_HEADERS = [
     "Caption (Facebook)",
     "Caption (Instagram)",
     "Caption (TikTok)",
+    "Caption (YouTube)",
+    "Title (YouTube)",
 ]
 # Columns the robot fills in. Added automatically if missing.
 OUTPUT_HEADERS = [
@@ -33,6 +35,7 @@ OUTPUT_HEADERS = [
     "Facebook result",
     "Instagram result",
     "TikTok result",
+    "YouTube result",
     "Attempts",
     "Updated at",
 ]
@@ -58,6 +61,8 @@ ALIASES = {
     "file": "media",
     "media_url": "media",
     "url": "link",
+    "title": "title_youtube",
+    "youtube_title": "title_youtube",
 }
 
 STATE_TAB = "_state"
@@ -290,8 +295,10 @@ class GoogleWorkspace:
                 ALL_HEADERS,
                 [
                     "2030-01-01 09:00",
-                    "facebook, instagram, tiktok",
+                    "all",
                     "Example post - change the date, add a Drive link to a video, then clear the Status cell.",
+                    "",
+                    "",
                     "",
                     "",
                     "",

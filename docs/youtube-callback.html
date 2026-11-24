@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connect YouTube</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body><main>
+<h1>Connect YouTube</h1>
+
+<div class="card" id="result" hidden></div>
+
+<div class="card" id="start">
+  <p><strong>Step 1.</strong> Paste your Google OAuth <em>Client ID</em> (it ends in <code>.apps.googleusercontent.com</code>, not the secret) and press the button.</p>
+  <label for="cid">Client ID</label>
+  <input id="cid" autocomplete="off" placeholder="1234567890-abc.apps.googleusercontent.com">
+  <button id="go">Log in with Google</button>
+  <p class="muted">Pick the Google account (and channel) you want to upload to. If Google says the app isn't verified, click <em>Advanced &rarr; Go to … (unsafe)</em>: it's your own app.</p>
+  <p class="muted">This page's address must be listed under <em>Authorized redirect URIs</em> in your Google OAuth client:<br><code id="self"></code></p>
+</div>
+
+<script>
+  const here = location.origin + location.pathname;
+  document.getElementById("self").textContent = here;
+  const params = new URLSearchParams(location.search);
+  const box = document.getElementById("result");
+  if (params.get("code")) {
+    const code = params.get("code");
+    box.hidden = false;
+    box.innerHTML = '<p><strong>Step 2.</strong> Copy this code. In GitHub open <em>Actions &rarr; Autopost &rarr; Run workflow</em>, choose <code>youtube-connect</code>, paste it into <em>login_code</em> and run. Do this within a few minutes - the code expires quickly.</p><span class="code" id="code"></span><button id="copy">Copy code</button>';
+    document.getElementById("code").textContent = code;
+    document.getElementById("copy").onclick = () => navigator.clipboard.writeText(code).then(() => { document.getElementById("copy").textContent = "Copied!"; });
+    history.replaceState(null, "", here);
+  } else if (params.get("error")) {
+    box.hidden = false;
+    box.textContent = "Google returned an error: " + params.get("error");
+  }
+  try { document.getElementById("cid").value = localStorage.getItem("yt_cid") || ""; } catch (e) {}
+  document.getElementById("go").onclick = () => {
+    const cid = document.getElementById("cid").value.trim();
+    if (!cid) { alert("Paste your Client ID first."); return; }
+    try { localStorage.setItem("yt_cid", cid); } catch (e) {}
+    const q = new URLSearchParams({
+      client_id: cid,
+      redirect_uri: here,
+      response_type: "code",
+      scope: "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
+      access_type: "offline",
+      prompt: "consent"
+    });
+    location.href = "https://accounts.google.com/o/oauth2/v2/auth?" + q.toString();
+  };
+</script>
+</main></body>
+</html>

@@ -28,7 +28,7 @@
   if (params.get("code")) {
     const code = params.get("code");
     box.hidden = false;
-    box.innerHTML = '<p><strong>Step 2.</strong> Copy this code. In GitHub open <em>Actions &rarr; Autopost &rarr; Run workflow</em>, choose <code>tiktok-connect</code>, paste it into <em>tiktok_code</em> and run. Do this within a few minutes - the code expires quickly.</p><span class="code" id="code"></span><button id="copy">Copy code</button>';
+    box.innerHTML = '<p><strong>Step 2.</strong> Copy this code. In GitHub open <em>Actions &rarr; Autopost &rarr; Run workflow</em>, choose <code>tiktok-connect</code>, paste it into <em>login_code</em> and run. Do this within a few minutes - the code expires quickly.</p><span class="code" id="code"></span><button id="copy">Copy code</button>';
     document.getElementById("code").textContent = code;
     document.getElementById("copy").onclick = () => navigator.clipboard.writeText(code).then(() => { document.getElementById("copy").textContent = "Copied!"; });
     history.replaceState(null, "", here);
