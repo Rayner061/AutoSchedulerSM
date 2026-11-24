@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connect TikTok</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body><main>
+<h1>Connect TikTok</h1>
+
+<div class="card" id="result" hidden></div>
+
+<div class="card" id="start">
+  <p><strong>Step 1.</strong> Paste your TikTok <em>Client key</em> (from developers.tiktok.com, not the secret) and press the button.</p>
+  <label for="key">Client key</label>
+  <input id="key" autocomplete="off" placeholder="aw1b2c3d4e5f...">
+  <label for="scopes">Permissions</label>
+  <input id="scopes" value="user.info.basic,video.upload,video.publish">
+  <button id="go">Log in with TikTok</button>
+  <p class="muted">This page's address must be added as a Redirect URI in your TikTok app:<br><code id="self"></code></p>
+</div>
+
+<script>
+  const here = location.origin + location.pathname;
+  document.getElementById("self").textContent = here;
+  const params = new URLSearchParams(location.search);
+  const box = document.getElementById("result");
+  if (params.get("code")) {
+    const code = params.get("code");
+    box.hidden = false;
+    box.innerHTML = '<p><strong>Step 2.</strong> Copy this code. In GitHub open <em>Actions &rarr; Autopost &rarr; Run workflow</em>, choose <code>tiktok-connect</code>, paste it into <em>tiktok_code</em> and run. Do this within a few minutes - the code expires quickly.</p><span class="code" id="code"></span><button id="copy">Copy code</button>';
+    document.getElementById("code").textContent = code;
+    document.getElementById("copy").onclick = () => navigator.clipboard.writeText(code).then(() => { document.getElementById("copy").textContent = "Copied!"; });
+    history.replaceState(null, "", here);
+  } else if (params.get("error")) {
+    box.hidden = false;
+    box.textContent = "TikTok returned an error: " + params.get("error") + " " + (params.get("error_description") || "");
+  }
+  try { document.getElementById("key").value = localStorage.getItem("tt_key") || ""; } catch (e) {}
+  document.getElementById("go").onclick = () => {
+    const key = document.getElementById("key").value.trim();
+    if (!key) { alert("Paste your Client key first."); return; }
+    try { localStorage.setItem("tt_key", key); } catch (e) {}
+    const q = new URLSearchParams({
+      client_key: key,
+      scope: document.getElementById("scopes").value.trim(),
+      response_type: "code",
+      redirect_uri: here,
+      state: Math.random().toString(36).slice(2)
+    });
+    location.href = "https://www.tiktok.com/v2/auth/authorize/?" + q.toString();
+  };
+</script>
+</main></body>
+</html>
