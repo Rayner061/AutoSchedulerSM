@@ -1,0 +1,92 @@
+name: Autopost
+
+on:
+  schedule:
+    # Every 15 minutes (minutes chosen off the hour because GitHub is busiest at :00).
+    # GitHub may start scheduled runs a few minutes late.
+    - cron: "7,22,37,52 * * * *"
+    # Once a month: keep the repository "active" so GitHub doesn't pause the schedule.
+    - cron: "17 3 1 * *"
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "What to do"
+        type: choice
+        default: run
+        options:
+          - run
+          - dry-run
+          - check
+          - init-sheet
+          - tiktok-login-url
+          - tiktok-connect
+          - youtube-connect
+      login_code:
+        description: "Only for tiktok-connect / youtube-connect: the code shown on the callback page"
+        required: false
+        default: ""
+
+concurrency:
+  group: autopost
+  cancel-in-progress: false
+
+jobs:
+  autopost:
+    if: github.event.schedule != '17 3 1 * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Autopost
+        env:
+          COMMAND: ${{ inputs.command || 'run' }}
+          LOGIN_CODE: ${{ inputs.login_code }}
+          # Secrets (Settings > Secrets and variables > Actions > Secrets)
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          # Variables (Settings > Secrets and variables > Actions > Variables) - all optional
+          SHEET_TAB: ${{ vars.SHEET_TAB }}
+          TIMEZONE: ${{ vars.TIMEZONE }}
+          TIKTOK_MODE: ${{ vars.TIKTOK_MODE }}
+          TIKTOK_PRIVACY: ${{ vars.TIKTOK_PRIVACY }}
+          TIKTOK_REDIRECT_URI: ${{ vars.TIKTOK_REDIRECT_URI }}
+          YOUTUBE_REDIRECT_URI: ${{ vars.YOUTUBE_REDIRECT_URI }}
+          YOUTUBE_PRIVACY: ${{ vars.YOUTUBE_PRIVACY }}
+          YOUTUBE_CATEGORY_ID: ${{ vars.YOUTUBE_CATEGORY_ID }}
+          YOUTUBE_MADE_FOR_KIDS: ${{ vars.YOUTUBE_MADE_FOR_KIDS }}
+          GRAPH_API_VERSION: ${{ vars.GRAPH_API_VERSION }}
+          MAX_ATTEMPTS: ${{ vars.MAX_ATTEMPTS }}
+          MAX_LATE_HOURS: ${{ vars.MAX_LATE_HOURS }}
+        run: python -m autopost "$COMMAND"
+
+  keepalive:
+    # GitHub pauses scheduled workflows in public repos after 60 days without commits.
+    if: github.event.schedule == '17 3 1 * *'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Empty keep-alive commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: keep scheduled workflow active"
+          git push
