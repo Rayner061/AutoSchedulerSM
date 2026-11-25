@@ -14,3 +14,7 @@ button { margin-top:14px; padding:10px 16px; border:0; border-radius:8px; backgr
 code, .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
 .code { display:block; padding:12px; border-radius:8px; background:var(--bg); border:1px solid var(--line); margin-top:8px; }
 a { color: var(--accent); }
+.yt-badge { display:inline-flex; align-items:center; gap:10px; padding:10px 14px; border:1px solid var(--line); border-radius:10px; background:var(--card); font-weight:600; }
+.yt-badge .yt { color:#fff; background:#FF0000; border-radius:6px; padding:2px 8px; font-weight:700; letter-spacing:.2px; }
+nav.links { display:flex; flex-wrap:wrap; gap:8px 18px; margin:20px 0; }
+footer { margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:.9rem; }

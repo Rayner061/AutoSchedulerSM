@@ -2,17 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Autopost</title>
+<title>AutoSchedulerSM</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body><main>
-<h1>Autopost</h1>
-<p class="muted">A private tool that publishes scheduled posts to the owner's own Facebook Page, Instagram account, TikTok account and YouTube channel.</p>
-<ul>
-  <li><a href="privacy.html">Privacy policy</a></li>
-  <li><a href="terms.html">Terms of service</a></li>
-  <li><a href="tiktok-callback.html">Connect TikTok</a></li>
-  <li><a href="youtube-callback.html">Connect YouTube</a></li>
-</ul>
+<h1>AutoSchedulerSM</h1>
+<p class="muted">A private, single-user tool that publishes the owner's scheduled posts to the owner's own Facebook Page, Instagram account, TikTok account and YouTube channel.</p>
+
+<p class="yt-badge"><span class="yt">YouTube</span> This app uses YouTube API Services</p>
+
+<nav class="links">
+  <a href="privacy.html"><strong>Privacy Policy</strong></a>
+  <a href="terms.html"><strong>Terms of Service</strong></a>
+  <a href="youtube-callback.html">Connect YouTube</a>
+  <a href="tiktok-callback.html">Connect TikTok</a>
+</nav>
+
+<h2>How it works</h2>
+<ol>
+  <li>The owner lists posts (date, caption, video or photo) in their own private Google Sheet.</li>
+  <li>A scheduled job checks the sheet and, at the scheduled time, uploads each post to the owner's own accounts using the official platform APIs (for YouTube: the YouTube Data API).</li>
+  <li>The result (a link to the published post) is written back to the sheet.</li>
+</ol>
+
+<footer class="muted">
+  By using AutoSchedulerSM you agree to the <a href="https://www.youtube.com/t/terms">YouTube Terms of Service</a>.
+  See the <a href="https://policies.google.com/privacy">Google Privacy Policy</a> and our <a href="privacy.html">Privacy Policy</a>.
+</footer>
 </main></body>
 </html>
